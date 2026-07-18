@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scale Interval Memory Trainer</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0b0f19;
+    }
+    .font-display {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+    /* Custom track styling for nice scrollbars where needed */
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #111827;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #374151;
+      border-radius: 3px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #4b5563;
+    }
+  </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="border-b border-gray-800 bg-gray-950/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-music text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-lg md:text-xl tracking-wide bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+            PentaRecall
+          </h1>
+          <p class="text-xs text-gray-400">Scale Interval Memory Trainer</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button id="help-btn" class="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition duration-150">
+          <i class="fa-solid fa-circle-question text-lg"></i>
+        </button>
+        <button id="audio-settings-btn" class="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-gray-800 transition duration-150 flex items-center space-x-1">
+          <i id="audio-status-icon" class="fa-solid fa-volume-high text-lg text-emerald-400"></i>
+          <span class="text-xs hidden md:inline font-medium">Synth On</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Help Modal -->
+  <div id="help-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl max-w-lg w-full p-6 relative shadow-2xl">
+      <button id="close-help-btn" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+      <h3 class="text-xl font-display font-bold text-white mb-4 flex items-center">
+        <i class="fa-solid fa-circle-question text-indigo-400 mr-2"></i> How to Train
+      </h3>
+      <div class="space-y-4 text-sm text-gray-300 leading-relaxed">
+        <p>
+          This application is designed to build rapid visual & mental memory for the intervals of the <strong>Minor Pentatonic scale</strong> ($1$, $\flat3$, $4$, $5$, $\flat7$).
+        </p>
+        <div class="bg-gray-950 p-3 rounded-lg border border-gray-800">
+          <strong class="text-indigo-300 block mb-1">Recommended Routine:</strong>
+          <ul class="list-disc pl-5 space-y-1 text-gray-400 text-xs">
+            <li>Choose your root key (e.g., A, C, E, etc.).</li>
+            <li>Select the interval notes you want to drill (start with all checked).</li>
+            <li>Set a comfortable transition time (e.g., 4.0s).</li>
+            <li>Hit <strong>START</strong> and find/play each interval immediately on your instrument!</li>
+            <li>Slowly decrease the timer down to 1.5s or 1.0s to build instant muscle memory.</li>
+          </ul>
+        </div>
+        <p>
+          Enable the <strong>Voice Prompt</strong> mode to have the trainer call out intervals aloud, or the <strong>Pitch Synth</strong> to hear the relative interval tone. Use the interactive Fretboard or Keyboard at the bottom as a visual reference map!
+        </p>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button id="ok-help-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2 rounded-xl transition">
+          Let's Train
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Grid Layout -->
+  <main class="max-w-6xl w-full mx-auto p-4 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- Left Column: Settings and Controls (Col 1-4) -->
+    <section class="lg:col-span-4 bg-gray-950/50 border border-gray-800 rounded-2xl p-5 shadow-sm space-y-6">
+      
+      <!-- Interval Selection -->
+      <div>
+        <h3 class="text-sm font-semibold tracking-wider text-gray-400 uppercase mb-3 flex items-center justify-between">
+          <span>Active Intervals</span>
+          <span class="text-xs text-indigo-400 font-normal">Minor Pentatonic</span>
+        </h3>
+        <div class="grid grid-cols-5 gap-2">
+          <!-- Interval Toggle 1 -->
+          <button data-interval="1" class="interval-toggle py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 font-bold hover:bg-indigo-500/20 transition-all shadow-sm shadow-indigo-500/5 flex flex-col items-center">
+            <span class="text-lg">1</span>
+            <span class="text-[10px] text-indigo-400 font-medium">Root</span>
+          </button>
+          <!-- Interval Toggle b3 -->
+          <button data-interval="b3" class="interval-toggle py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 font-bold hover:bg-indigo-500/20 transition-all shadow-sm shadow-indigo-500/5 flex flex-col items-center">
+            <span class="text-lg">♭3</span>
+            <span class="text-[10px] text-indigo-400 font-medium">m3</span>
+          </button>
+          <!-- Interval Toggle 4 -->
+          <button data-interval="4" class="interval-toggle py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 font-bold hover:bg-indigo-500/20 transition-all shadow-sm shadow-indigo-500/5 flex flex-col items-center">
+            <span class="text-lg">4</span>
+            <span class="text-[10px] text-indigo-400 font-medium">P4</span>
+          </button>
+          <!-- Interval Toggle 5 -->
+          <button data-interval="5" class="interval-toggle py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 font-bold hover:bg-indigo-500/20 transition-all shadow-sm shadow-indigo-500/5 flex flex-col items-center">
+            <span class="text-lg">5</span>
+            <span class="text-[10px] text-indigo-400 font-medium">P5</span>
+          </button>
+          <!-- Interval Toggle b7 -->
+          <button data-interval="b7" class="interval-toggle py-3 rounded-xl border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 font-bold hover:bg-indigo-500/20 transition-all shadow-sm shadow-indigo-500/5 flex flex-col items-center">
+            <span class="text-lg">♭7</span>
+            <span class="text-[10px] text-indigo-400 font-medium">m7</span>
+          </button>
+        </div>
+        <p class="text-[11px] text-gray-500 mt-2 text-center">Toggle intervals to include/exclude them from current session</p>
+      </div>
+
+      <!-- Root Key Selector -->
+      <div>
+        <label for="root-select" class="block text-sm font-semibold tracking-wider text-gray-400 uppercase mb-2">Root Key (Reference)</label>
+        <div class="relative">
+          <select id="root-select" class="w-full bg-gray-900 border border-gray-800 text-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition appearance-none">
+            <option value="A" selected>A (Recommended for guitar)</option>
+            <option value="A#">A# / Bb</option>
+            <option value="B">B</option>
+            <option value="C">C (Recommended for piano)</option>
+            <option value="C#">C# / Db</option>
+            <option value="D">D</option>
+            <option value="D#">D# / Eb</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="F#">F# / Gb</option>
+            <option value="G">G</option>
+            <option value="G#">G# / Ab</option>
+          </select>
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-500">
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Speed / Time Slider -->
+      <div>
+        <div class="flex justify-between items-center mb-2">
+          <label for="speed-range" class="text-sm font-semibold tracking-wider text-gray-400 uppercase">Transition Delay</label>
+          <span id="speed-display" class="font-display font-bold text-indigo-400 text-lg bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">3.0s</span>
+        </div>
+        <input type="range" id="speed-range" min="0.5" max="10.0" step="0.5" value="3.0" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+        <div class="flex justify-between text-[11px] text-gray-500 mt-1">
+          <span>0.5s (Insane)</span>
+          <span>5s (Medium)</span>
+          <span>10s (Relaxed)</span>
+        </div>
+      </div>
+
+      <!-- Settings / Training Modes -->
+      <div class="space-y-3 pt-2">
+        <h3 class="text-sm font-semibold tracking-wider text-gray-400 uppercase">Training Preferences</h3>
+        
+        <!-- Sequential vs Random Mode -->
+        <div class="grid grid-cols-2 gap-2 bg-gray-900 p-1.5 rounded-xl border border-gray-800">
+          <button id="mode-random-btn" class="bg-indigo-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-shuffle"></i>
+            <span>Random</span>
+          </button>
+          <button id="mode-seq-btn" class="text-gray-400 hover:text-gray-200 text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-arrow-right-long"></i>
+            <span>Sequential</span>
+          </button>
+        </div>
+
+        <!-- Audio Synthesis & TTS Switches -->
+        <div class="space-y-2 bg-gray-900/60 rounded-xl p-3 border border-gray-800/80">
+          <!-- Voice Prompt Mode -->
+          <div class="flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-gray-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-comment-dots text-indigo-400 w-3.5"></i>
+                Voice Prompter
+              </span>
+              <span class="text-[10px] text-gray-500">Speaks interval names aloud</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input id="toggle-voice" type="checkbox" class="sr-only peer">
+              <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+            </label>
+          </div>
+
+          <!-- Synthesizer Tone -->
+          <div class="flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-xs font-medium text-gray-200 flex items-center gap-1.5">
+                <i class="fa-solid fa-wave-square text-indigo-400 w-3.5"></i>
+                Play Note Synth
+              </span>
+              <span class="text-[10px] text-gray-500">Plays corresponding audio pitch</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input id="toggle-synth" type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600 peer-checked:after:bg-white"></div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Right Column: Interactive Prompt & Displays (Col 5-12) -->
+    <section class="lg:col-span-8 space-y-6">
+      
+      <!-- Primary Display Card -->
+      <div class="bg-gradient-to-br from-gray-950 to-gray-900 border border-gray-800 rounded-3xl p-6 md:p-8 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-xl min-h-[380px]">
+        
+        <!-- Subtle Grid Pattern Background -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+        
+        <!-- Circular/Timer Bar surrounding active interval -->
+        <div class="relative w-48 h-48 md:w-56 md:h-56 rounded-full flex items-center justify-center bg-gray-950/80 border border-gray-800 shadow-inner z-10">
+          
+          <!-- Outer circular svg countdown -->
+          <svg class="absolute inset-0 w-full h-full -rotate-90 scale-x-[-1]">
+            <circle cx="50%" cy="50%" r="46%" stroke="#111827" stroke-width="4" fill="transparent" />
+            <circle id="countdown-ring" cx="50%" cy="50%" r="46%" stroke="url(#gradient)" stroke-width="6" stroke-dasharray="600" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#4f46e5" />
+                <stop offset="100%" stop-color="#9333ea" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Inside details -->
+          <div class="flex flex-col items-center justify-center">
+            <!-- Active Interval Text -->
+            <span id="active-interval-display" class="text-7xl md:text-8xl font-extrabold font-display tracking-tight text-white drop-shadow-[0_0_15px_rgba(99,102,241,0.4)]">
+              1
+            </span>
+            <!-- Active Note Equivalent -->
+            <span id="active-note-display" class="text-lg md:text-xl font-semibold text-gray-400 mt-1">
+              A
+            </span>
+            <!-- Name Descriptor -->
+            <span id="active-name-display" class="text-xs tracking-wider text-indigo-400 uppercase font-medium mt-0.5">
+              Root
+            </span>
+          </div>
+
+        </div>
+
+        <!-- Controls Bar beneath displays -->
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-4 z-10 w-full max-w-sm">
+          <button id="prev-btn" class="bg-gray-900 border border-gray-800 text-gray-300 hover:text-white hover:bg-gray-800 p-4 rounded-2xl transition-all shadow-md">
+            <i class="fa-solid fa-backward text-xl"></i>
+          </button>
+          
+          <button id="play-pause-btn" class="bg-indigo-600 text-white font-bold px-8 py-4 rounded-2xl hover:bg-indigo-500 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-500/25 flex items-center space-x-3 text-lg min-w-[140px] justify-center">
+            <i id="play-icon" class="fa-solid fa-play"></i>
+            <span id="play-text">START</span>
+          </button>
+
+          <button id="next-btn" class="bg-gray-900 border border-gray-800 text-gray-300 hover:text-white hover:bg-gray-800 p-4 rounded-2xl transition-all shadow-md">
+            <i class="fa-solid fa-forward text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Quick scoring/accuracy check -->
+        <div class="mt-6 flex items-center justify-center space-x-6 z-10 text-xs text-gray-400 bg-gray-900/40 py-2 px-4 rounded-full border border-gray-800/60">
+          <span class="flex items-center gap-1"><i class="fa-solid fa-fire text-amber-500"></i> Streak: <span id="streak-counter" class="text-white font-semibold">0</span></span>
+          <span class="text-gray-600">|</span>
+          <span class="flex items-center gap-1"><i class="fa-solid fa-music text-indigo-400"></i> Notes Trained: <span id="total-seen-counter" class="text-white font-semibold">0</span></span>
+        </div>
+
+      </div>
+
+      <!-- Fretboard & Keyboard Visual Aids Header -->
+      <div class="bg-gray-950/50 border border-gray-800 rounded-2xl p-4 space-y-4">
+        
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-eye text-indigo-400"></i>
+            <h4 class="text-sm font-semibold tracking-wide text-gray-300">Visual Fretboard & Keyboard Reference</h4>
+          </div>
+          <div class="flex space-x-1.5 bg-gray-900 p-1 rounded-lg border border-gray-800">
+            <button id="visual-fret-btn" class="px-3 py-1 text-xs font-semibold rounded bg-indigo-600 text-white transition">Guitar Fretboard</button>
+            <button id="visual-piano-btn" class="px-3 py-1 text-xs font-semibold rounded text-gray-400 hover:text-white transition">Piano Keys</button>
+          </div>
+        </div>
+
+        <!-- Fretboard Container -->
+        <div id="fretboard-wrapper" class="overflow-x-auto no-scrollbar custom-scroll pt-2">
+          <div class="min-w-[800px] bg-amber-950/10 border border-amber-950/30 rounded-xl p-4 relative">
+            <!-- Fretboard Grid -->
+            <div id="fretboard" class="grid grid-rows-6 gap-0 relative select-none">
+              <!-- Strings generated dynamically by JS -->
+            </div>
+            <!-- Dynamic Fret Marker labels (Perfectly Aligned with flex layout) -->
+            <div id="fretboard-labels" class="flex text-center text-[10px] text-gray-500 font-bold mt-3">
+              <!-- Rendered Dynamically by JS up to Fret 15 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyboard Container (Hidden by default) -->
+        <div id="keyboard-wrapper" class="hidden overflow-x-auto no-scrollbar custom-scroll pt-2">
+          <div class="min-w-[550px] bg-gray-900 rounded-xl p-4 flex justify-center">
+            <!-- Piano Keys Container -->
+            <div id="piano-keyboard" class="flex relative h-36 border border-gray-800 rounded-lg overflow-hidden bg-gray-950" style="width: 480px;">
+              <!-- Keys generated dynamically by JS -->
+            </div>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-gray-500 leading-normal text-center">
+          Note positions correspond automatically to your chosen Root Key (<span class="selected-root-display font-semibold text-gray-400">A</span>). 
+          The active interval <span id="reference-active-symbol" class="text-indigo-400 font-bold">1</span> is highlighted in <span class="text-indigo-400 font-semibold">Purple</span>, 
+          while the root node is shown in <span class="text-emerald-400 font-semibold">Green</span>. Fret numbers <span class="text-indigo-400 font-semibold">3, 5, 7, 9, 12, 15</span> are highlighted with inlay indicators.
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-gray-800 bg-gray-950/40 text-center py-4 px-4 text-xs text-gray-500 mt-8">
+    <p>Develop perfect pitch muscle memory by adjusting speeds down to your threshold.</p>
+    <p class="mt-1 text-gray-600">PentaRecall Trainer &copy; 2026. Made for Musicians.</p>
+  </footer>
+
+  <!-- Audio Context & Tone Generation + App State Logic -->
+  <script>
+    // Audio synthesis setup
+    let audioCtx = null;
+    let synthEnabled = true;
+    let voiceEnabled = false;
+
+    // Scale & Interval Definitions
+    const ALL_INTERVALS = {
+      '1': { name: 'Root', semitones: 0, tts: 'Root' },
+      'b3': { name: 'Minor 3rd', semitones: 3, tts: 'Minor Third' },
+      '4': { name: 'Perfect 4th', semitones: 5, tts: 'Fourth' },
+      '5': { name: 'Perfect 5th', semitones: 7, tts: 'Fifth' },
+      'b7': { name: 'Minor 7th', semitones: 10, tts: 'Minor Seventh' }
+    };
+
+    const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    
+    // Default Fretboard Strings tuning (EADGBE - standard guitar)
+    const STRING_ROOTS = [
+      4,  // E string (index 4 in NOTE_NAMES is E)
+      11, // B string (index 11 is B)
+      7,  // G string (index 7 is G)
+      2,  // D string (index 2 is D)
+      9,  // A string (index 9 is A)
+      4   // E string (index 4 is E)
+    ];
+
+    // App state
+    let state = {
+      activeIntervals: ['1', 'b3', '4', '5', 'b7'],
+      rootKey: 'A',
+      currentIntervalIndex: 0,
+      transitionSpeed: 3.0, // seconds
+      isPlaying: false,
+      mode: 'random', // 'random' or 'sequential'
+      seenCount: 0,
+      streak: 0,
+      timerId: null,
+      countdownStartTime: null,
+      countdownIntervalId: null,
+      history: []
+    };
+
+    // DOM Elements
+    const intervalToggles = document.querySelectorAll('.interval-toggle');
+    const rootSelect = document.getElementById('root-select');
+    const selectedRootDisplays = document.querySelectorAll('.selected-root-display');
+    const speedRange = document.getElementById('speed-range');
+    const speedDisplay = document.getElementById('speed-display');
+    const modeRandomBtn = document.getElementById('mode-random-btn');
+    const modeSeqBtn = document.getElementById('mode-seq-btn');
+    const toggleVoice = document.getElementById('toggle-voice');
+    const toggleSynth = document.getElementById('toggle-synth');
+    
+    const activeIntervalDisplay = document.getElementById('active-interval-display');
+    const activeNoteDisplay = document.getElementById('active-note-display');
+    const activeNameDisplay = document.getElementById('active-name-display');
+    const countdownRing = document.getElementById('countdown-ring');
+    
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const playText = document.getElementById('play-text');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    const streakCounter = document.getElementById('streak-counter');
+    const totalSeenCounter = document.getElementById('total-seen-counter');
+    
+    const helpBtn = document.getElementById('help-btn');
+    const helpModal = document.getElementById('help-modal');
+    const closeHelpBtn = document.getElementById('close-help-btn');
+    const okHelpBtn = document.getElementById('ok-help-btn');
+    const audioSettingsBtn = document.getElementById('audio-settings-btn');
+    const audioStatusIcon = document.getElementById('audio-status-icon');
+
+    const visualFretBtn = document.getElementById('visual-fret-btn');
+    const visualPianoBtn = document.getElementById('visual-piano-btn');
+    const fretboardWrapper = document.getElementById('fretboard-wrapper');
+    const keyboardWrapper = document.getElementById('keyboard-wrapper');
+    const referenceActiveSymbol = document.getElementById('reference-active-symbol');
+
+    // Audio Init
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Play synthesized pitch for an interval
+    function playIntervalPitch(semitones) {
+      if (!synthEnabled) return;
+      initAudio();
+      
+      try {
+        const rootIndex = NOTE_NAMES.indexOf(state.rootKey);
+        // Base note frequency (A3 = 220Hz approx)
+        const baseOctave = state.rootKey === 'E' || state.rootKey === 'F' || state.rootKey === 'G' || state.rootKey === 'G#' ? 2 : 3;
+        
+        // Calculate note index relative to C0
+        // C0 is ~16.35Hz. C3 is 130.81Hz.
+        const midiNote = 60 + rootIndex + semitones; // Middle C is 60. root key relative
+        const freq = Math.pow(2, (midiNote - 69) / 12) * 440;
+
+        // Create synth chain
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        // Warm, slightly retro-inspired keyboard wave
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+        // Envelope shape
+        gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(0.2, audioCtx.currentTime + 0.05); // Attack
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8); // Decay/Sustain
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+      } catch (e) {
+        console.warn("Audio Context synth blocked or failed", e);
+      }
+    }
+
+    // Synthesize vocal prompts if supported
+    function speakPrompt(text) {
+      if (!voiceEnabled) return;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Stop current speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.1;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
+    // Initialize/Update Fretboard visualization
+    function renderFretboard() {
+      const fretboard = document.getElementById('fretboard');
+      fretboard.innerHTML = '';
+      
+      const rootIndex = NOTE_NAMES.indexOf(state.rootKey);
+      const currentIntervalKey = state.activeIntervals[state.currentIntervalIndex];
+      const activeIntervalData = ALL_INTERVALS[currentIntervalKey];
+      const targetSemitones = activeIntervalData ? activeIntervalData.semitones : 0;
+      
+      const absoluteTargetNoteIndex = (rootIndex + targetSemitones) % 12;
+
+      // Render 6 strings
+      for (let s = 0; s < 6; s++) {
+        const stringRow = document.createElement('div');
+        stringRow.className = "flex items-center relative h-8 border-b border-gray-800/80 last:border-0";
+        
+        // Horizontal String Line
+        const stringLine = document.createElement('div');
+        const thickness = 1 + (s * 0.4); // lower strings are thicker
+        stringLine.className = "absolute left-0 right-0 pointer-events-none bg-gradient-to-r from-gray-700 via-gray-600 to-gray-700";
+        stringLine.style.height = `${thickness}px`;
+        stringLine.style.top = "50%";
+        stringLine.style.transform = "translateY(-50%)";
+        stringRow.appendChild(stringLine);
+
+        // String base note index
+        const stringBaseNote = STRING_ROOTS[s];
+
+        // Render 16 columns (Nut + 15 Frets)
+        for (let f = 0; f <= 15; f++) {
+          const fretDiv = document.createElement('div');
+          fretDiv.className = "flex-1 flex justify-center items-center h-full relative z-10 border-r border-amber-950/20";
+          if (f === 0) {
+            fretDiv.className += " border-r-4 border-gray-600 bg-gray-900/30"; // Thick Nut
+          }
+
+          // Calculate Note name for this specific string and fret
+          const noteIndex = (stringBaseNote + f) % 12;
+          const noteName = NOTE_NAMES[noteIndex];
+          const relativeToRootSemitones = (noteIndex - rootIndex + 12) % 12;
+
+          // Is it an interval in our scale?
+          let matchedIntervalKey = null;
+          for (let key in ALL_INTERVALS) {
+            if (ALL_INTERVALS[key].semitones === relativeToRootSemitones) {
+              matchedIntervalKey = key;
+              break;
+            }
+          }
+
+          if (matchedIntervalKey) {
+            const noteCircle = document.createElement('div');
+            
+            // Customize style depending on whether it's the Root or Active Interval
+            if (noteIndex === rootIndex) {
+              // Root node
+              noteCircle.className = "w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold shadow-sm bg-emerald-500 text-gray-950 animate-pulse border-2 border-white/40";
+              noteCircle.innerText = "1";
+              noteCircle.title = `Root Note (${noteName})`;
+            } else if (matchedIntervalKey === currentIntervalKey) {
+              // Active target interval
+              noteCircle.className = "w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] font-extrabold shadow-md bg-gradient-to-r from-indigo-500 to-purple-600 text-white border border-indigo-300 scale-110 z-20";
+              noteCircle.innerText = matchedIntervalKey === 'b3' ? '♭3' : (matchedIntervalKey === 'b7' ? '♭7' : matchedIntervalKey);
+              noteCircle.title = `${ALL_INTERVALS[matchedIntervalKey].name} (${noteName})`;
+            } else {
+              // Dimmed inactive scale tones
+              noteCircle.className = "w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center text-[9px] font-medium bg-gray-800 text-gray-400 border border-gray-700 opacity-60";
+              noteCircle.innerText = matchedIntervalKey === 'b3' ? '♭3' : (matchedIntervalKey === 'b7' ? '♭7' : matchedIntervalKey);
+            }
+            
+            fretDiv.appendChild(noteCircle);
+          }
+
+          stringRow.appendChild(fretDiv);
+        }
+
+        fretboard.appendChild(stringRow);
+      }
+
+      // Render Perfectly-Aligned Fret Labels underneath
+      renderFretboardLabels();
+    }
+
+    // Generate Fret Labels dynamically so they align to flex containers exactly
+    function renderFretboardLabels() {
+      const labelsContainer = document.getElementById('fretboard-labels');
+      labelsContainer.innerHTML = '';
+
+      for (let f = 0; f <= 15; f++) {
+        const labelDiv = document.createElement('div');
+        labelDiv.className = "flex-1 text-center font-bold text-[10px]";
+
+        if (f === 0) {
+          labelDiv.innerText = "Nut";
+          labelDiv.className += " text-gray-400";
+        } else {
+          labelDiv.innerText = f;
+          // Highlight standard marker positions, emphasizing user's requested 3, 5, 9, 12, 15 (and 7)
+          if ([3, 5, 7, 9, 12, 15].includes(f)) {
+            labelDiv.className += " text-indigo-400 text-xs font-extrabold";
+            // Render specific marker dot patterns underneath numbers
+            if (f === 12) {
+              labelDiv.innerHTML = `${f}<br><span class="text-[9px] text-indigo-500 tracking-tighter leading-none">• •</span>`;
+            } else {
+              labelDiv.innerHTML = `${f}<br><span class="text-[9px] text-indigo-500 leading-none">•</span>`;
+            }
+          } else {
+            labelDiv.className += " text-gray-600 font-medium";
+          }
+        }
+        labelsContainer.appendChild(labelDiv);
+      }
+    }
+
+    // Initialize/Update Piano keyboard visualization
+    function renderPiano() {
+      const keyboard = document.getElementById('piano-keyboard');
+      keyboard.innerHTML = '';
+
+      const rootIndex = NOTE_NAMES.indexOf(state.rootKey);
+      const currentIntervalKey = state.activeIntervals[state.currentIntervalIndex];
+      const activeIntervalData = ALL_INTERVALS[currentIntervalKey];
+      const targetSemitones = activeIntervalData ? activeIntervalData.semitones : 0;
+      const absoluteTargetNoteIndex = (rootIndex + targetSemitones) % 12;
+
+      // Setup keys (1.5 octaves starting from C, total 18 keys)
+      // Array configuration: isBlack, relative semitone
+      const keyConfig = [
+        { isBlack: false, name: 'C', offset: 0 },
+        { isBlack: true, name: 'C#', offset: 1 },
+        { isBlack: false, name: 'D', offset: 2 },
+        { isBlack: true, name: 'D#', offset: 3 },
+        { isBlack: false, name: 'E', offset: 4 },
+        { isBlack: false, name: 'F', offset: 5 },
+        { isBlack: true, name: 'F#', offset: 6 },
+        { isBlack: false, name: 'G', offset: 7 },
+        { isBlack: true, name: 'G#', offset: 8 },
+        { isBlack: false, name: 'A', offset: 9 },
+        { isBlack: true, name: 'A#', offset: 10 },
+        { isBlack: false, name: 'B', offset: 11 },
+        // Part of next octave
+        { isBlack: false, name: 'C', offset: 12 },
+        { isBlack: true, name: 'C#', offset: 13 },
+        { isBlack: false, name: 'D', offset: 14 },
+        { isBlack: true, name: 'D#', offset: 15 },
+        { isBlack: false, name: 'E', offset: 16 },
+        { isBlack: false, name: 'F', offset: 17 }
+      ];
+
+      // To keep track of DOM elements for overlay matching
+      const whiteKeys = [];
+      const blackKeys = [];
+
+      keyConfig.forEach((key, index) => {
+        const keyDiv = document.createElement('div');
+        
+        // Convert to absolute index in our 12-semitone system
+        const absIndex = key.offset % 12;
+        const relativeToRoot = (absIndex - rootIndex + 12) % 12;
+        
+        let isScaleNote = false;
+        let matchedIntervalKey = null;
+
+        for (let k in ALL_INTERVALS) {
+          if (ALL_INTERVALS[k].semitones === relativeToRoot) {
+            isScaleNote = true;
+            matchedIntervalKey = k;
+            break;
+          }
+        }
+
+        const isCurrentTarget = (matchedIntervalKey === currentIntervalKey);
+        const isRoot = (absIndex === rootIndex);
+
+        keyDiv.dataset.absIndex = absIndex;
+        keyDiv.dataset.name = key.name;
+
+        // Custom styled badges on top of keys
+        let label = '';
+        if (isRoot) label = '1';
+        else if (matchedIntervalKey === 'b3') label = '♭3';
+        else if (matchedIntervalKey === 'b7') label = '♭7';
+        else if (matchedIntervalKey) label = matchedIntervalKey;
+
+        if (!key.isBlack) {
+          // White Key style
+          keyDiv.className = `flex-1 bg-white border border-gray-300 h-full relative flex flex-col justify-end items-center pb-2 cursor-pointer transition-colors z-10`;
+          if (isCurrentTarget) {
+            keyDiv.classList.add('!bg-indigo-100');
+          } else if (isRoot) {
+            keyDiv.classList.add('!bg-emerald-50');
+          }
+          
+          if (isScaleNote) {
+            const circle = document.createElement('div');
+            if (isRoot) {
+              circle.className = "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-emerald-500 text-gray-950 shadow-sm border border-emerald-400";
+            } else if (isCurrentTarget) {
+              circle.className = "w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md scale-110";
+            } else {
+              circle.className = "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-medium bg-gray-200 text-gray-700 border border-gray-300";
+            }
+            circle.innerText = label;
+            keyDiv.appendChild(circle);
+          }
+          whiteKeys.push(keyDiv);
+          keyboard.appendChild(keyDiv);
+        } else {
+          // Black Key style
+          keyDiv.className = `w-6 h-20 bg-gray-950 border border-gray-800 rounded-b absolute flex flex-col justify-end items-center pb-1 cursor-pointer transition-colors z-20 shadow-md`;
+          
+          // Position relative to white keys
+          // Count white keys before this black key to set appropriate absolute left percentage
+          const previousWhiteKeysCount = keyConfig.slice(0, index).filter(k => !k.isBlack).length;
+          keyDiv.style.left = `${(previousWhiteKeysCount * (100 / 11)) - 2.5}%`;
+
+          if (isCurrentTarget) {
+            keyDiv.classList.add('!bg-indigo-950', 'border-indigo-500');
+          } else if (isRoot) {
+            keyDiv.classList.add('!bg-emerald-950', 'border-emerald-500');
+          }
+
+          if (isScaleNote) {
+            const circle = document.createElement('div');
+            if (isRoot) {
+              circle.className = "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold bg-emerald-500 text-gray-950 border border-emerald-400";
+            } else if (isCurrentTarget) {
+              circle.className = "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md scale-110";
+            } else {
+              circle.className = "w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-medium bg-gray-800 text-gray-300 border border-gray-700";
+            }
+            circle.innerText = label;
+            keyDiv.appendChild(circle);
+          }
+          keyboard.appendChild(keyDiv);
+        }
+      });
+    }
+
+    // Refresh active helper visualizers
+    function updateVisualizers() {
+      const currentIntervalKey = state.activeIntervals[state.currentIntervalIndex];
+      referenceActiveSymbol.innerText = currentIntervalKey === 'b3' ? '♭3' : (currentIntervalKey === 'b7' ? '♭7' : currentIntervalKey);
+      renderFretboard();
+      renderPiano();
+    }
+
+    // Calculate current note equivalent based on key + interval offset
+    function calculateNote(intervalKey) {
+      if (!intervalKey) return '';
+      const rootIndex = NOTE_NAMES.indexOf(state.rootKey);
+      const semitoneOffset = ALL_INTERVALS[intervalKey].semitones;
+      const targetIndex = (rootIndex + semitoneOffset) % 12;
+      return NOTE_NAMES[targetIndex];
+    }
+
+    // Displays the current state interval
+    function displayCurrentInterval() {
+      if (state.activeIntervals.length === 0) {
+        activeIntervalDisplay.innerText = "-";
+        activeNoteDisplay.innerText = "No selection";
+        activeNameDisplay.innerText = "Enable an interval";
+        return;
+      }
+
+      const activeIntervalKey = state.activeIntervals[state.currentIntervalIndex];
+      const intervalInfo = ALL_INTERVALS[activeIntervalKey];
+      
+      // Update visual labels with proper flat symbol
+      let formattedSymbol = activeIntervalKey;
+      if (activeIntervalKey === 'b3') formattedSymbol = '♭3';
+      else if (activeIntervalKey === 'b7') formattedSymbol = '♭7';
+
+      activeIntervalDisplay.innerText = formattedSymbol;
+      
+      // Note equivalent
+      const noteStr = calculateNote(activeIntervalKey);
+      activeNoteDisplay.innerText = `${state.rootKey} ➜ ${noteStr}`;
+      
+      // Full name
+      activeNameDisplay.innerText = intervalInfo.name;
+
+      // Updates references down the UI
+      updateVisualizers();
+
+      // Audio Pitch playback
+      if (state.isPlaying) {
+        playIntervalPitch(intervalInfo.semitones);
+        // Speaks interval using speech synthesis helper if enabled
+        speakPrompt(`${formattedSymbol === '♭3' ? 'flat three' : (formattedSymbol === '♭7' ? 'flat seven' : formattedSymbol)}`);
+      }
+    }
+
+    // Choose next interval based on Sequential or Random parameters
+    function determineNextIndex(direction = 1) {
+      const len = state.activeIntervals.length;
+      if (len === 0) return;
+
+      if (state.mode === 'sequential') {
+        state.currentIntervalIndex = (state.currentIntervalIndex + direction + len) % len;
+      } else {
+        // Random mode
+        if (len === 1) {
+          state.currentIntervalIndex = 0;
+          return;
+        }
+        let nextIdx;
+        do {
+          nextIdx = Math.floor(Math.random() * len);
+        } while (nextIdx === state.currentIntervalIndex); // avoid instant repeats
+        state.currentIntervalIndex = nextIdx;
+      }
+    }
+
+    // Update Countdown Ring SVG
+    function drawCountdownRing(percent) {
+      const radius = 46;
+      const circumference = 2 * Math.PI * radius;
+      const strokeDashoffset = circumference - (percent * circumference);
+      countdownRing.style.strokeDasharray = `${circumference}`;
+      countdownRing.style.strokeDashoffset = `${strokeDashoffset}`;
+    }
+
+    // Handles periodic interval transition updates
+    function updateTransitionTimer() {
+      if (!state.isPlaying) return;
+
+      const elapsed = Date.now() - state.countdownStartTime;
+      const totalDuration = state.transitionSpeed * 1000;
+      let ratio = elapsed / totalDuration;
+
+      if (ratio >= 1.0) {
+        // Time is up! Rotate to the next interval
+        ratio = 1.0;
+        determineNextIndex(1);
+        displayCurrentInterval();
+        
+        // Track accuracy/session counts
+        state.seenCount += 1;
+        state.streak += 1;
+        totalSeenCounter.innerText = state.seenCount;
+        streakCounter.innerText = state.streak;
+
+        // Reset countdown clock
+        state.countdownStartTime = Date.now();
+        ratio = 0;
+      }
+
+      drawCountdownRing(1 - ratio);
+    }
+
+    // Turn timer training on
+    function startTraining() {
+      if (state.activeIntervals.length === 0) {
+        return;
+      }
+      initAudio();
+      state.isPlaying = true;
+      playText.innerText = "PAUSE";
+      playIcon.className = "fa-solid fa-pause";
+      
+      // Start/reset timer state
+      state.countdownStartTime = Date.now();
+      
+      // Trigger instant play for starting node
+      const currentIntervalKey = state.activeIntervals[state.currentIntervalIndex];
+      const intervalInfo = ALL_INTERVALS[currentIntervalKey];
+      playIntervalPitch(intervalInfo.semitones);
+      speakPrompt(`${currentIntervalKey === 'b3' ? 'flat three' : (currentIntervalKey === 'b7' ? 'flat seven' : currentIntervalKey)}`);
+
+      // Incremental counter updates
+      state.seenCount += 1;
+      totalSeenCounter.innerText = state.seenCount;
+
+      // Clear existing loops
+      if (state.timerId) clearInterval(state.timerId);
+      
+      // Render loop (60 frames per second for smooth circular progress indicator)
+      state.timerId = setInterval(updateTransitionTimer, 16.67);
+    }
+
+    // Turn timer training off
+    function pauseTraining() {
+      state.isPlaying = false;
+      playText.innerText = "RESUME";
+      playIcon.className = "fa-solid fa-play";
+      
+      if (state.timerId) {
+        clearInterval(state.timerId);
+        state.timerId = null;
+      }
+      drawCountdownRing(1.0); // Reset full progress ring
+    }
+
+    // DOM event listeners setup
+    function setupEventListeners() {
+      
+      // Start / Pause
+      playPauseBtn.addEventListener('click', () => {
+        if (state.isPlaying) {
+          pauseTraining();
+        } else {
+          startTraining();
+        }
+      });
+
+      // Backward Button manual click
+      prevBtn.addEventListener('click', () => {
+        const playingState = state.isPlaying;
+        if (playingState) pauseTraining();
+        
+        determineNextIndex(-1);
+        displayCurrentInterval();
+        
+        if (playingState) startTraining();
+      });
+
+      // Forward Button manual click
+      nextBtn.addEventListener('click', () => {
+        const playingState = state.isPlaying;
+        if (playingState) pauseTraining();
+        
+        determineNextIndex(1);
+        displayCurrentInterval();
+        
+        if (playingState) startTraining();
+      });
+
+      // Root selector change
+      rootSelect.addEventListener('change', (e) => {
+        state.rootKey = e.target.value;
+        selectedRootDisplays.forEach(el => el.innerText = state.rootKey);
+        displayCurrentInterval();
+      });
+
+      // Speed Slider input
+      speedRange.addEventListener('input', (e) => {
+        const value = parseFloat(e.target.value);
+        state.transitionSpeed = value;
+        speedDisplay.innerText = `${value.toFixed(1)}s`;
+        if (state.isPlaying) {
+          // Reset starting point to prevent jumpy delays
+          state.countdownStartTime = Date.now();
+        }
+      });
+
+      // Toggle Selection Intervals
+      intervalToggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          const key = toggle.dataset.interval;
+          const idx = state.activeIntervals.indexOf(key);
+          
+          if (idx > -1) {
+            // Do not allow empty active selection list
+            if (state.activeIntervals.length <= 1) {
+              return;
+            }
+            state.activeIntervals.splice(idx, 1);
+            toggle.classList.remove('border-indigo-500/30', 'bg-indigo-500/10', 'text-indigo-300');
+            toggle.classList.add('border-gray-800', 'bg-gray-900/30', 'text-gray-500');
+          } else {
+            state.activeIntervals.push(key);
+            // Sort by pentatonic layout index
+            const desiredOrder = ['1', 'b3', '4', '5', 'b7'];
+            state.activeIntervals.sort((a, b) => desiredOrder.indexOf(a) - desiredOrder.indexOf(b));
+            
+            toggle.classList.add('border-indigo-500/30', 'bg-indigo-500/10', 'text-indigo-300');
+            toggle.classList.remove('border-gray-800', 'bg-gray-900/30', 'text-gray-500');
+          }
+
+          // Reset pointer to first safe position
+          state.currentIntervalIndex = 0;
+          displayCurrentInterval();
+        });
+      });
+
+      // Sequential / Random Mode buttons
+      modeRandomBtn.addEventListener('click', () => {
+        state.mode = 'random';
+        modeRandomBtn.className = "bg-indigo-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1.5";
+        modeSeqBtn.className = "text-gray-400 hover:text-gray-200 text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1.5";
+      });
+
+      modeSeqBtn.addEventListener('click', () => {
+        state.mode = 'sequential';
+        modeSeqBtn.className = "bg-indigo-600 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1.5";
+        modeRandomBtn.className = "text-gray-400 hover:text-gray-200 text-xs font-semibold py-2 px-3 rounded-lg transition-all flex items-center justify-center space-x-1.5";
+      });
+
+      // Quick settings buttons header
+      helpBtn.addEventListener('click', () => helpModal.classList.remove('hidden'));
+      closeHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
+      okHelpBtn.addEventListener('click', () => helpModal.classList.add('hidden'));
+      helpModal.addEventListener('click', (e) => {
+        if (e.target === helpModal) helpModal.classList.add('hidden');
+      });
+
+      // Synth Volume toggles
+      audioSettingsBtn.addEventListener('click', () => {
+        synthEnabled = !synthEnabled;
+        toggleSynth.checked = synthEnabled;
+        updateSynthButtonStatus();
+      });
+
+      toggleSynth.addEventListener('change', (e) => {
+        synthEnabled = e.target.checked;
+        updateSynthButtonStatus();
+      });
+
+      toggleVoice.addEventListener('change', (e) => {
+        voiceEnabled = e.target.checked;
+        if (voiceEnabled) {
+          initAudio();
+          speakPrompt("Voice active");
+        }
+      });
+
+      // Fretboard vs Keyboard Tab toggling
+      visualFretBtn.addEventListener('click', () => {
+        visualFretBtn.className = "px-3 py-1 text-xs font-semibold rounded bg-indigo-600 text-white transition";
+        visualPianoBtn.className = "px-3 py-1 text-xs font-semibold rounded text-gray-400 hover:text-white transition";
+        fretboardWrapper.classList.remove('hidden');
+        keyboardWrapper.classList.add('hidden');
+      });
+
+      visualPianoBtn.addEventListener('click', () => {
+        visualPianoBtn.className = "px-3 py-1 text-xs font-semibold rounded bg-indigo-600 text-white transition";
+        visualFretBtn.className = "px-3 py-1 text-xs font-semibold rounded text-gray-400 hover:text-white transition";
+        keyboardWrapper.classList.remove('hidden');
+        fretboardWrapper.classList.add('hidden');
+      });
+    }
+
+    function updateSynthButtonStatus() {
+      if (synthEnabled) {
+        audioStatusIcon.className = "fa-solid fa-volume-high text-lg text-emerald-400";
+        audioSettingsBtn.querySelector('span').innerText = "Synth On";
+      } else {
+        audioStatusIcon.className = "fa-solid fa-volume-xmark text-lg text-gray-500";
+        audioSettingsBtn.querySelector('span').innerText = "Synth Off";
+      }
+    }
+
+    // Initialize application on window load
+    window.onload = function() {
+      setupEventListeners();
+      displayCurrentInterval();
+      drawCountdownRing(1.0);
+    };
+  </script>
+</body>
+</html>
